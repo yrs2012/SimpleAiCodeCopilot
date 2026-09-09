@@ -1,0 +1,56 @@
+<idea-plugin>
+    <id>com.aicode.plugin</id>
+    <name>AiCode</name>
+    <vendor>aicode</vendor>
+
+    <description><![CDATA[
+        <b>AiCode</b> —— 内嵌在 Android Studio 中的 AI 编码助手。
+        <ul>
+            <li>自定义 LLM Provider：任意 OpenAI 兼容接口（OpenAI / DeepSeek / OpenRouter / Ollama / 自部署 vLLM 等）</li>
+            <li>新建对话、多轮对话，流式输出，可中途停止</li>
+            <li>历史会话持久化，可随时切换、继续旧 Session</li>
+            <li>将指定文件或整个文件夹加入上下文，让 AI 阅读你的代码</li>
+            <li>编辑器右键 / Tools 菜单 “Send to AiCode”：把当前文件或选中代码发给助手</li>
+        </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <b>1.0.0</b>
+        <ul>
+            <li>首个版本：自定义 Provider、多轮对话、历史会话、文件/文件夹上下文。</li>
+        </ul>
+    ]]></change-notes>
+
+    <!-- 仅依赖平台核心模块，因此同时兼容 Android Studio 与 IntelliJ IDEA -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- 右侧工具窗口 -->
+        <toolWindow id="AiCode"
+                    anchor="right"
+                    factoryClass="com.aicode.plugin.AiCodeToolWindowFactory"
+                    canCloseBean="true"/>
+
+        <!-- Provider 配置（应用级；AiCodeUiService 通过 @Service 注解注册，勿在此重复声明） -->
+        <applicationService serviceImplementation="com.aicode.plugin.provider.ProviderManager"/>
+
+        <!-- Settings → Tools → AiCode -->
+        <applicationConfigurable
+                id="tools.aicode"
+                parentId="tools"
+                instance="com.aicode.plugin.provider.AiCodeSettingsConfigurable"/>
+
+        <notificationGroup id="AiCode" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <action id="AiCode.SendSelection"
+                class="com.aicode.plugin.action.SendToAiCodeAction"
+                text="Send to AiCode"
+                description="Send the current file (or selected code) to the AiCode assistant"
+                icon="AllIcons.Actions.Forward">
+            <add-to-group group-id="EditorPopupMenu"/>
+            <add-to-group group-id="ToolsMenu"/>
+        </action>
+    </actions>
+</idea-plugin>
