@@ -1,4 +1,4 @@
-rootProject.name = "AiCode"
+rootProject.name = "AiCodeCopilot"
 
 pluginManagement {
     repositories {

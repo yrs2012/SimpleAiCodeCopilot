@@ -1,4 +1,4 @@
-# AiCode 架构设计
+# AiCodeCopilot 架构设计
 
 ## 总览
 
@@ -7,7 +7,7 @@
 │  Android Studio (IntelliJ Platform)                            │
 │                                                                │
 │  ┌──────────────┐   ┌──────────────────────────────────────┐  │
-│  │ Editor 右键   │   │  AiCode 工具窗口 (右侧)               │  │
+│  │ Editor 右键   │   │  AiCodeCopilot 工具窗口 (右侧)               │  │
 │  │ Tools 菜单    │   │  ┌────────────────────────────────┐  │  │
 │  │ SendToAiCode │──▶│  │ ChatPanel (Swing UI)            │  │  │
 │  │   Action     │   │  │  会话下拉/Provider/上下文/消息区   │  │  │
@@ -50,7 +50,7 @@
   - **硬超时**：建连 15s（chat 默认 30s）、请求 30s（testConnection）/
     60s（chat 10min / listModels），`HttpTimeoutException`/`ConnectException`/
     `UnknownHostException` 统一映射为带明确文案的 `LlmException`；
-  - **全程日志**（`AiCode:` 前缀，`idea.log`）：请求发起（URL/model/超时）、
+  - **全程日志**（`AiCodeCopilot:` 前缀，`idea.log`）：请求发起（URL/model/超时）、
     响应状态 + 耗时、完成字符数、各类失败，用于定位“卡住/无提示”类问题；
   - JSON 使用平台内置的 `org.json`；
   - 支持 SSE 流式（`data: {...}` 行协议，`[DONE]` 结束），并对不返回
@@ -99,7 +99,7 @@
 | --- | --- |
 | FILE | 请求时实时读取文件最新内容（单文件 60,000 字符截断） |
 | FOLDER | 递归 BFS 扫描；跳过 `.git`/`build`/`node_modules` 等目录与二进制文件；上限 200 文件 / 400,000 字符 |
-| SNIPPET | “Send to AiCode” 选区的内容（内联保存，不随文件变化丢失） |
+| SNIPPET | “Send to AiCodeCopilot” 选区的内容（内联保存，不随文件变化丢失） |
 
 所有上下文以 system 消息的形式附加在请求中（独立于系统提示词，便于模型区分）。
 
@@ -120,9 +120,9 @@
   4. 预插入一条空 assistant 消息占位；
   5. 后台线程执行流式请求，增量追加到占位消息（`synchronized` 保护）；
   6. 结束/失败/停止后统一落盘，并通过 `ChatUiListener` 通知 UI（切 EDT）。
-  全流程有 `AiCode:` 日志：发送开始（provider/model/baseUrl/历史条数/上下文项数）、
+  全流程有 `AiCodeCopilot:` 日志：发送开始（provider/model/baseUrl/历史条数/上下文项数）、
   流式完成（耗时 + 字符数）、被停止、失败（耗时 + 原因），便于排查“无响应”。
-- **线程模型**：请求在独立 `Thread("aicode-chat")` 上运行；所有 UI 回调经
+- **线程模型**：请求在独立 `Thread("aicodecopilot-chat")` 上运行；所有 UI 回调经
   `ApplicationManager.invokeLater` 切回 EDT。停止通过 `AtomicBoolean` 协作取消。
 
 ### 5. UI 层（`chat/ChatPanel.kt`）
@@ -148,10 +148,10 @@
 
 ### 6. 动作与桥接
 
-- **`AiCodeUiService`**（project 服务）：持有当前 ChatPanel 引用。
-  工具窗口是惰性创建的——用户未打开窗口就触发 “Send to AiCode” 时，
+- **`AiCodeCopilotUiService`**（project 服务）：持有当前 ChatPanel 引用。
+  工具窗口是惰性创建的——用户未打开窗口就触发 “Send to AiCodeCopilot” 时，
   待添加的片段/文件先暂存在服务里，面板创建后自动应用。
-- **`SendToAiCodeAction`**：读取当前 PSI 文件与编辑器选区，写入服务并激活工具窗口。
+- **`SendToAiCodeCopilotAction`**：读取当前 PSI 文件与编辑器选区，写入服务并激活工具窗口。
 
 ## 数据流（一次发送）
 
@@ -204,7 +204,7 @@
   `JFileChooser`（真实磁盘），`LocalFileSystem` 才能解析。
 - 轻量测试 IDE 只通过注解扫描注册插件的 `@Service`/`@State` 服务，
   **不处理 plugin.xml 的扩展点**（如 `toolWindow`），因此
-  `ToolWindowSmokeTest` 在该环境下 `getToolWindow("AiCode")` 为 null，
+  `ToolWindowSmokeTest` 在该环境下 `getToolWindow("AiCodeCopilot")` 为 null，
   用例以 `return` 跳过；在完整加载插件 EP 的环境（runIde 沙箱）中生效。
 - 252 的 `ToolWindowFactory` 为 Kotlin 接口：`createToolWindowContent(Project, ToolWindow)`
   是**唯一抽象方法**（平台经 `ToolWindowImpl.createContentIfNeeded` 调用），

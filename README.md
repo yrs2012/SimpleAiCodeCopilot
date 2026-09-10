@@ -1,6 +1,6 @@
-# AiCode — Android Studio AI 编码助手插件
+# AiCodeCopilot — Android Studio AI 编码助手插件
 
-AiCode 是一个内嵌在 **Android Studio**（也兼容 IntelliJ IDEA）中的 AI 编码助手插件。
+AiCodeCopilot 是一个内嵌在 **Android Studio**（也兼容 IntelliJ IDEA）中的 AI 编码助手插件。
 它提供一个右侧聊天工具窗口，让你在不离开 IDE 的情况下与任意大语言模型对话、
 并让它直接“阅读”你的项目文件与文件夹。
 
@@ -13,7 +13,7 @@ AiCode 是一个内嵌在 **Android Studio**（也兼容 IntelliJ IDEA）中的 
 | 💬 多轮对话 | 自动携带历史上下文（默认最近 40 条消息），支持流式（SSE）输出，可随时**停止** |
 | 🕘 历史 Session | 会话自动持久化到本地，下拉列表可切换、**继续任意历史会话**、删除会话 |
 | 📂 阅读文件 / 文件夹 | 将指定文件或整个文件夹加入上下文，AI 回答时会阅读其内容（自动跳过二进制/构建目录，单文件 60KB、总量 400KB 保护上限） |
-| 🖱 Send to AiCode | 编辑器右键菜单 / Tools 菜单：把当前文件或选中代码一键发给助手 |
+| 🖱 Send to AiCodeCopilot | 编辑器右键菜单 / Tools 菜单：把当前文件或选中代码一键发给助手 |
 | ⌨ 斜杠命令 | `/add <路径>`、`/clear`、`/help` |
 
 ## 环境要求
@@ -38,7 +38,7 @@ AiCode 是一个内嵌在 **Android Studio**（也兼容 IntelliJ IDEA）中的 
 产物位于：
 
 ```
-build/distributions/AiCode-1.0.0.zip
+build/distributions/AiCodeCopilot-1.0.0.zip
 ```
 
 > 在 Windows 上使用 `gradlew.bat buildPlugin`。
@@ -47,12 +47,12 @@ build/distributions/AiCode-1.0.0.zip
 
 1. Android Studio → **Settings**（macOS 为 **Preferences**）→ **Plugins**
 2. 右上角齿轮 ⚙ → **Install Plugin from Disk…**
-3. 选择 `build/distributions/AiCode-1.0.0.zip`
+3. 选择 `build/distributions/AiCodeCopilot-1.0.0.zip`
 4. 重启 IDE
 
 ### 3. 配置 Provider
 
-1. **Settings → Tools → AiCode**
+1. **Settings → Tools → AiCodeCopilot**
 2. 点击 **Add Provider…**（或编辑预置的 OpenAI / DeepSeek）
 3. 填写：
    - **Name**：任意名称
@@ -76,7 +76,7 @@ build/distributions/AiCode-1.0.0.zip
 
 ### 4. 开始对话
 
-1. 打开右侧 **AiCode** 工具窗口（View → Tool Windows → AiCode）
+1. 打开右侧 **AiCodeCopilot** 工具窗口（View → Tool Windows → AiCodeCopilot）
 2. 输入问题，**Enter** 发送（**Shift+Enter** 换行）
 3. 回复以流式输出；过程中点击 **Stop** 可中断（已生成的内容保留）
 
@@ -99,11 +99,11 @@ build/distributions/AiCode-1.0.0.zip
 
 > 上下文限制：单文件最多 60,000 字符；文件夹最多 200 个文件、总计 400,000 字符。
 
-### Send to AiCode
+### Send to AiCodeCopilot
 
-- 在编辑器中**右键 → Send to AiCode**：把当前文件加入上下文
+- 在编辑器中**右键 → Send to AiCodeCopilot**：把当前文件加入上下文
 - 若事先**选中了代码**：选区会以 `文件名 (L起-L止)` 片段形式加入上下文（同时加入整个文件）
-- 也可以从 **Tools → Send to AiCode** 菜单触发
+- 也可以从 **Tools → Send to AiCodeCopilot** 菜单触发
 
 ### 斜杠命令
 
@@ -116,31 +116,31 @@ build/distributions/AiCode-1.0.0.zip
 ## 项目结构
 
 ```
-AiCode/
+AiCodeCopilot/
 ├── build.gradle.kts                 # Gradle 构建（IntelliJ Platform Gradle Plugin 2.x）
 ├── settings.gradle.kts
 ├── gradle.properties
 ├── gradle/wrapper/                  # Gradle Wrapper
 ├── src/main/
 │   ├── resources/META-INF/plugin.xml
-│   └── kotlin/com/aicode/plugin/
-│       ├── AiCodeToolWindowFactory.kt       # 右侧工具窗口
+│   └── kotlin/com/aicodecopilot/plugin/
+│       ├── AiCodeCopilotToolWindowFactory.kt       # 右侧工具窗口
 │       ├── action/
-│       │   └── SendToAiCodeAction.kt        # 右键“Send to AiCode”
+│       │   └── SendToAiCodeCopilotAction.kt        # 右键“Send to AiCodeCopilot”
 │       ├── chat/
 │       │   ├── ChatPanel.kt                 # 聊天 UI（Swing + HTML 渲染）
 │       │   ├── ChatController.kt            # 对话逻辑 / 流式请求 / 上下文
 │       │   ├── Session.kt                   # 会话与消息数据模型
 │       │   ├── SessionRepository.kt         # 会话 JSON 持久化
 │       │   ├── ContextResolver.kt           # 文件/文件夹 → Prompt 文本块
-│       │   └── AiCodeUiService.kt           # 面板宿主（Action 与面板的桥梁）
+│       │   └── AiCodeCopilotUiService.kt           # 面板宿主（Action 与面板的桥梁）
 │       └── provider/
 │           ├── ProviderConfig.kt            # Provider 配置模型
 │           ├── ProviderManager.kt           # Provider 持久化（应用级服务）
 │           ├── LlmClient.kt                 # OpenAI 兼容 HTTP 客户端（SSE 流式）
 │           ├── ProviderConfigDialog.kt      # 添加/编辑 Provider 对话框
-│           └── AiCodeSettingsConfigurable.kt# Settings → Tools → AiCode
-├── src/test/kotlin/com/aicode/plugin/       # 单元测试（./gradlew test）
+│           └── AiCodeCopilotSettingsConfigurable.kt# Settings → Tools → AiCodeCopilot
+├── src/test/kotlin/com/aicodecopilot/plugin/       # 单元测试（./gradlew test）
 │   ├── provider/  LlmClientTest（假 LLM 服务）/ ProviderManagerTest / ProviderConfigTest
 │   └── chat/      SessionRepositoryTest / ContextResolverTest
 └── docs/

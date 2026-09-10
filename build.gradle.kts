@@ -8,7 +8,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.18.1"
 }
 
-group = "com.aicode"
+group = "com.aicodecopilot"
 version = providers.gradleProperty("pluginVersion").getOrElse("1.0.0")
 
 repositories {
@@ -41,7 +41,7 @@ dependencies {
 
     // 测试编译需要平台自带的 testFramework.jar（LightPlatformTestCase 等基类）。
     // -PplatformLocalPath 模式下该 jar 在 <ide>/lib/testFramework.jar；
-    // 走远程 SDK（androidStudio(...)）时该 jar 已随 test-framework 依赖提供，此处文件不存在则跳过。
+    // 走远程 SDK（androidStudio(...)）时见下方 remoteIdeTestFrameworkJar 逻辑。
     val localIdePath = providers.gradleProperty("platformLocalPath")
     val localTestFramework =
         if (localIdePath.isPresent) {
@@ -53,6 +53,19 @@ dependencies {
 
     // JUnit 3/4 风格平台测试基类（LightCodeInsightFixtureTestCase 等）需要 junit4
     testImplementation("junit:junit:4.13.2")
+
+    // Light* fixture 类只随 IDE 发行版的 lib/testFramework.jar 发布，
+    // Maven 的 test-framework artifact 不含它们。从 transforms 缓存中定位
+    // 当前 IDE 的该 jar 并接到 test classpath；找不到则跳过（不影响主构建）。
+    val remoteIdeTestFrameworkJar: java.io.File? =
+        if (localIdePath.isPresent) null
+        else runCatching {
+            gradle.gradleUserHomeDir
+                .resolve("caches/${gradle.gradleVersion}/transforms")
+                .walkTopDown().maxDepth(6)
+                .firstOrNull { it.isFile && it.name == "testFramework.jar" }
+        }.getOrNull()
+    remoteIdeTestFrameworkJar?.takeIf { it.exists() }?.let { testImplementation(files(it)) }
 }
 
 kotlin {
@@ -88,11 +101,11 @@ intellijPlatform {
 // 会抛 "No roots for ..."。此时把测试 JVM 的 user.home 指到项目内可写目录。
 // 正常开发机 ~/.m2 可写则不受影响。
 // 注意：必须在 tasks{} 之前求值（java 插件在脚本求值期间即创建 test 任务）。
-val aicodeTestHomeSystemProperties: Map<String, Any> = run {
+val aicodecopilotTestHomeSystemProperties: Map<String, Any> = run {
     val defaultM2 = File(System.getProperty("user.home"), ".m2")
     val m2Usable = if (defaultM2.isDirectory) defaultM2.canWrite()
     else runCatching {
-        val probe = File(defaultM2, ".aicode-probe-" + System.nanoTime())
+        val probe = File(defaultM2, ".aicodecopilot-probe-" + System.nanoTime())
         val ok = probe.mkdirs()
         probe.deleteRecursively()
         ok
@@ -123,6 +136,6 @@ tasks {
 
     // 若默认 ~/.m2 不可用，覆写测试 JVM 的 user.home（见上方 val 注释）
     withType<Test> {
-        systemProperties.putAll(aicodeTestHomeSystemProperties)
+        systemProperties.putAll(aicodecopilotTestHomeSystemProperties)
     }
 }

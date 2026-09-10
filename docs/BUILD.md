@@ -20,7 +20,7 @@ export JAVA_HOME=~/.jdks/corretto-17.0.20.1/
 ./gradlew buildPlugin          # Windows: gradlew.bat buildPlugin
 ```
 
-产物：`build/distributions/AiCode-<version>.zip`
+产物：`build/distributions/AiCodeCopilot-<version>.zip`
 
 其他常用任务：
 
@@ -161,7 +161,7 @@ JDK 版本不对（低于 17）。设置 `JAVA_HOME` 指向 JDK 17+。
 `gradle.properties` 已设置 `kotlin.compiler.execution.strategy=in-process`，
 在 Gradle 进程内编译、不启动独立 Kotlin daemon。请勿删除该行（无头环境必需）。
 
-### 9. 点击右侧 AiCode 图标显示 "Nothing to show"
+### 9. 点击右侧 AiCodeCopilot 图标显示 "Nothing to show"
 
 工具窗注册成功（图标可见）但内容为空，且点击无反应——通常是
 `createToolWindowContent` 工厂方法抛异常被平台吞掉。
@@ -183,17 +183,17 @@ topPanel.layout = BoxLayout(topPanel, BoxLayout.Y_AXIS)
 ### 10. Test Connection / Auto Add Models 一直转圈、无成功或失败提示
 
 这两个操作在后台线程发 HTTP 请求，结果通过 `invokeLater` 回到 EDT 弹提示。
-为便于排查，**每一步都写了 `idea.log` 日志**（前缀 `AiCode:`）。复现后打开
+为便于排查，**每一步都写了 `idea.log` 日志**（前缀 `AiCodeCopilot:`）。复现后打开
 runIde 沙箱或本机的 `idea.log`（**Help → Show Log in Files**），按下面顺序读：
 
 | 日志 | 含义 |
 | --- | --- |
-| `AiCode: 测试连接 ... / Auto Add Models 开始 ...` | 操作已发起 |
-| `AiCode: 发起 chat 请求 ... / 获取模型列表 ...` | HTTP 请求真正发出 |
-| `AiCode: chat 响应 HTTP xxx（Nms）/ 模型列表响应 ...` | 收到响应（含耗时） |
-| `AiCode: Test Connection 网络调用结束（Nms，成功=...）` | 网络调用结束 |
-| `AiCode: 对话框已关闭，丢弃 ... 结果` | 你在结果回来前关掉了对话框 |
-| `AiCode: ... 被用户取消` | 你再次点击按钮触发了取消 |
+| `AiCodeCopilot: 测试连接 ... / Auto Add Models 开始 ...` | 操作已发起 |
+| `AiCodeCopilot: 发起 chat 请求 ... / 获取模型列表 ...` | HTTP 请求真正发出 |
+| `AiCodeCopilot: chat 响应 HTTP xxx（Nms）/ 模型列表响应 ...` | 收到响应（含耗时） |
+| `AiCodeCopilot: Test Connection 网络调用结束（Nms，成功=...）` | 网络调用结束 |
+| `AiCodeCopilot: 对话框已关闭，丢弃 ... 结果` | 你在结果回来前关掉了对话框 |
+| `AiCodeCopilot: ... 被用户取消` | 你再次点击按钮触发了取消 |
 
 - 若日志停在“发起请求”之后没有“响应”行 → 网络层卡住。本插件对 LLM 请求
   **强制直连、不走系统代理**（见下条）；若你的 base_url 必须经代理才能访问，

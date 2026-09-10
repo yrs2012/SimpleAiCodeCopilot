@@ -1,0 +1,23 @@
+node:internal/fs/watchers:331
+    throw error;
+    ^
+
+Error: EMFILE: too many open files, watch '/home/yangrenshuai/Documents/Work/AiCode/.superpowers/brainstorm/2251147-1788922891/content'
+    at FSWatcher.<computed> (node:internal/fs/watchers:323:19)
+    at Object.watch (node:fs:2609:36)
+    at startServer (/home/yangrenshuai/.cache/opencode/packages/superpowers@git+https:/github.com/obra/superpowers.git/node_modules/superpowers/skills/brainstorming/scripts/server.cjs:276:22)
+    at Object.<anonymous> (/home/yangrenshuai/.cache/opencode/packages/superpowers@git+https:/github.com/obra/superpowers.git/node_modules/superpowers/skills/brainstorming/scripts/server.cjs:351:3)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5) {
+  errno: -24,
+  syscall: 'watch',
+  code: 'EMFILE',
+  path: '/home/yangrenshuai/Documents/Work/AiCode/.superpowers/brainstorm/2251147-1788922891/content',
+  filename: '/home/yangrenshuai/Documents/Work/AiCode/.superpowers/brainstorm/2251147-1788922891/content'
+}
+
+Node.js v24.20.0

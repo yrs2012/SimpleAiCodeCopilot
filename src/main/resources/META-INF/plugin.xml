@@ -1,16 +1,16 @@
 <idea-plugin>
-    <id>com.aicode.plugin</id>
-    <name>AiCode</name>
-    <vendor>aicode</vendor>
+    <id>com.aicodecopilot.plugin</id>
+    <name>AiCodeCopilot</name>
+    <vendor>aicodecopilot</vendor>
 
     <description><![CDATA[
-        <b>AiCode</b> —— 内嵌在 Android Studio 中的 AI 编码助手。
+        <b>AiCodeCopilot</b> —— 内嵌在 Android Studio 中的 AI 编码助手。
         <ul>
             <li>自定义 LLM Provider：任意 OpenAI 兼容接口（OpenAI / DeepSeek / OpenRouter / Ollama / 自部署 vLLM 等）</li>
             <li>新建对话、多轮对话，流式输出，可中途停止</li>
             <li>历史会话持久化，可随时切换、继续旧 Session</li>
             <li>将指定文件或整个文件夹加入上下文，让 AI 阅读你的代码</li>
-            <li>编辑器右键 / Tools 菜单 “Send to AiCode”：把当前文件或选中代码发给助手</li>
+            <li>编辑器右键 / Tools 菜单 “Send to AiCodeCopilot”：把当前文件或选中代码发给助手</li>
         </ul>
     ]]></description>
 
@@ -26,28 +26,28 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- 右侧工具窗口 -->
-        <toolWindow id="AiCode"
+        <toolWindow id="AiCodeCopilot"
                     anchor="right"
-                    factoryClass="com.aicode.plugin.AiCodeToolWindowFactory"
+                    factoryClass="com.aicodecopilot.plugin.AiCodeCopilotToolWindowFactory"
                     canCloseBean="true"/>
 
-        <!-- Provider 配置（应用级；AiCodeUiService 通过 @Service 注解注册，勿在此重复声明） -->
-        <applicationService serviceImplementation="com.aicode.plugin.provider.ProviderManager"/>
+        <!-- Provider 配置（应用级；AiCodeCopilotUiService 通过 @Service 注解注册，勿在此重复声明） -->
+        <applicationService serviceImplementation="com.aicodecopilot.plugin.provider.ProviderManager"/>
 
-        <!-- Settings → Tools → AiCode -->
+        <!-- Settings → Tools → AiCodeCopilot -->
         <applicationConfigurable
-                id="tools.aicode"
+                id="tools.aicodecopilot"
                 parentId="tools"
-                instance="com.aicode.plugin.provider.AiCodeSettingsConfigurable"/>
+                instance="com.aicodecopilot.plugin.provider.AiCodeCopilotSettingsConfigurable"/>
 
-        <notificationGroup id="AiCode" displayType="BALLOON"/>
+        <notificationGroup id="AiCodeCopilot" displayType="BALLOON"/>
     </extensions>
 
     <actions>
-        <action id="AiCode.SendSelection"
-                class="com.aicode.plugin.action.SendToAiCodeAction"
-                text="Send to AiCode"
-                description="Send the current file (or selected code) to the AiCode assistant"
+        <action id="AiCodeCopilot.SendSelection"
+                class="com.aicodecopilot.plugin.action.SendToAiCodeCopilotAction"
+                text="Send to AiCodeCopilot"
+                description="Send the current file (or selected code) to the AiCodeCopilot assistant"
                 icon="AllIcons.Actions.Forward">
             <add-to-group group-id="EditorPopupMenu"/>
             <add-to-group group-id="ToolsMenu"/>
