@@ -39,7 +39,7 @@
 
         <!-- Settings → Tools → AiCodeCopilot（根节点，不可配置，仅作容器） -->
         <applicationConfigurable
-                id="aicodecopilot.settings.root"
+                id="tools.aicodecopilot"
                 parentId="tools"
                 displayName="AiCodeCopilot"
                 nonConfigurable="true"/>
@@ -47,13 +47,14 @@
         <!-- 子页：Provider 管理 -->
         <applicationConfigurable
                 id="tools.aicodecopilot.providers"
-                parentId="aicodecopilot.settings.root"
+                parentId="tools.aicodecopilot"
+                displayName="Providers"
                 instance="com.aicodecopilot.plugin.provider.AiCodeCopilotSettingsConfigurable"/>
 
         <!-- 子页：系统提示词模板 + 永久 Memory -->
         <applicationConfigurable
-                id="aicodecopilot.settings.prompts"
-                parentId="aicodecopilot.settings.root"
+                id="tools.aicodecopilot.prompts"
+                parentId="tools.aicodecopilot"
                 instance="com.aicodecopilot.plugin.provider.PromptsMemoryConfigurable"/>
 
         <notificationGroup id="AiCodeCopilot" displayType="BALLOON"/>

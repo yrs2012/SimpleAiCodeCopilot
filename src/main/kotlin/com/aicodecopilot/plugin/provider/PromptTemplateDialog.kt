@@ -71,7 +71,7 @@ class PromptTemplateDialog(private val existing: PromptTemplate?) : DialogWrappe
 
     fun buildResult(): PromptTemplate = PromptTemplate(
         id = source.id,
-        name = nameField.text.trim().ifBlank { "(unnamed)" },
+        name = nameField.text.trim(),
         content = contentArea.text
     )
 }

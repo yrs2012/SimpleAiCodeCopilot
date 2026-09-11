@@ -19,6 +19,8 @@ import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 /**
  * Settings → Tools → AiCodeCopilot → Prompts & Memory
@@ -77,10 +79,10 @@ class PromptsMemoryConfigurable : Configurable {
             wrapStyleWord = true
         }
         this.memoryArea = area
-        area.document.addDocumentListener(object : javax.swing.event.DocumentListener {
-            override fun insertUpdate(e: javax.swing.event.DocumentEvent) = saveMemory()
-            override fun removeUpdate(e: javax.swing.event.DocumentEvent) = saveMemory()
-            override fun changedUpdate(e: javax.swing.event.DocumentEvent) = saveMemory()
+        area.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) = saveMemory()
+            override fun removeUpdate(e: DocumentEvent) = saveMemory()
+            override fun changedUpdate(e: DocumentEvent) = saveMemory()
         })
 
         val memoryTitle = JBLabel("Permanent Memory")
@@ -162,6 +164,6 @@ class PromptsMemoryConfigurable : Configurable {
 
     override fun reset() {
         reload()
-        memoryArea?.text = manager.memory
+        if (memoryArea?.text != manager.memory) memoryArea?.text = manager.memory
     }
 }
