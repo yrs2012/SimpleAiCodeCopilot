@@ -28,7 +28,7 @@ import javax.swing.ListSelectionModel
  */
 class AiCodeCopilotSettingsConfigurable : Configurable {
 
-    override fun getDisplayName(): String = "AiCodeCopilot"
+    override fun getDisplayName(): String = "Providers"
 
     private var panel: JComponent? = null
     private var list: JList<ProviderConfig>? = null
