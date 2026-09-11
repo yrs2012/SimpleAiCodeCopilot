@@ -117,4 +117,12 @@ class PromptManagerTest : LightCodeInsightFixtureTestCase() {
         val p = PromptManager.buildSystemPrompt(null, "note")
         assertEquals(ChatController.SYSTEM_PROMPT + "\n\n# Permanent Memory\nnote", p)
     }
+
+    fun testBuildSystemPromptBlankAndTrimmedMemory() {
+        assertEquals(ChatController.SYSTEM_PROMPT, PromptManager.buildSystemPrompt(null, "   "))
+        assertEquals(
+            ChatController.SYSTEM_PROMPT + "\n\n# Permanent Memory\nnote",
+            PromptManager.buildSystemPrompt(null, "  note  ")
+        )
+    }
 }
