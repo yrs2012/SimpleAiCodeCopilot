@@ -34,6 +34,9 @@
         <!-- Provider 配置（应用级；AiCodeCopilotUiService 通过 @Service 注解注册，勿在此重复声明） -->
         <applicationService serviceImplementation="com.aicodecopilot.plugin.provider.ProviderManager"/>
 
+        <!-- 系统提示词模板 + 永久 Memory（应用级） -->
+        <applicationService serviceImplementation="com.aicodecopilot.plugin.provider.PromptManager"/>
+
         <!-- Settings → Tools → AiCodeCopilot -->
         <applicationConfigurable
                 id="tools.aicodecopilot"

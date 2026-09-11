@@ -1,0 +1,73 @@
+package com.aicodecopilot.plugin.provider
+
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase
+import com.intellij.util.xmlb.XmlSerializer
+
+/**
+ * PromptManager 应用级服务测试（需要平台测试环境）。
+ * 每个测试用例使用独立的测试 Application，互不干扰。
+ */
+class PromptManagerTest : LightCodeInsightFixtureTestCase() {
+
+    private val manager: PromptManager get() = PromptManager.getInstance()
+
+    /**
+     * 回归测试：@State 载体必须能被平台 XML 序列化器实例化/序列化。
+     * 走真实 [XmlSerializer] serialize + deserialize 往返（即平台存储的同一代码路径）。
+     */
+    fun testStateXmlRoundTrip() {
+        val state = PromptManagerState().apply {
+            templates = mutableListOf(
+                PromptTemplate(name = "Default", content = "be brief"),
+                PromptTemplate(name = "Reviewer", content = "review code")
+            )
+            activeTemplateId = templates.first().id
+            memory = "user prefers Kotlin"
+        }
+        val element = XmlSerializer.serialize(state)
+        val restored = XmlSerializer.deserialize(element, PromptManagerState::class.java)
+        assertEquals(2, restored.templates.size)
+        assertEquals("Default", restored.templates.first().name)
+        assertEquals("be brief", restored.templates.first().content)
+        assertEquals(state.activeTemplateId, restored.activeTemplateId)
+        assertEquals("user prefers Kotlin", restored.memory)
+    }
+
+    fun testDefaultStateHasOneActiveTemplate() {
+        val all = manager.all()
+        assertTrue("首次启动应预置 Default 模板", all.size >= 1)
+        assertNotNull("Default 模板应激活", manager.activeTemplate())
+    }
+
+    fun testAddUpdateRemove() {
+        val t = PromptTemplate(name = "T", content = "c")
+        manager.add(t)
+        assertEquals("T", manager.byId(t.id)?.name)
+
+        manager.update(t.copy(name = "T2", content = "c2"))
+        assertEquals("T2", manager.byId(t.id)?.name)
+        assertEquals("c2", manager.byId(t.id)?.content)
+
+        val before = manager.all().size
+        manager.remove(t.id)
+        assertNull(manager.byId(t.id))
+        assertEquals(before - 1, manager.all().size)
+    }
+
+    fun testSetActiveAndRemoveActiveFallsBackToNull() {
+        val a = PromptTemplate(name = "A", content = "a")
+        manager.add(a)
+        manager.setActive(a.id)
+        assertEquals(a.id, manager.activeTemplate()?.id)
+
+        manager.remove(a.id)
+        assertNull("删除激活模板后应回退为 null（发送时用内置默认）", manager.activeTemplate())
+    }
+
+    fun testMemoryReadWrite() {
+        manager.setMemory("hello memory")
+        assertEquals("hello memory", manager.memory)
+        manager.setMemory("")
+        assertEquals("", manager.memory)
+    }
+}
