@@ -265,6 +265,14 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
                 ) {
                     e.consume()
                     onSendClicked()
+                    return
+                }
+                if (e.keyCode == KeyEvent.VK_ENTER &&
+                    e.isShiftDown && !e.isControlDown && !e.isAltDown
+                ) {
+                    // Shift+Enter 换行：显式插入（不依赖 keymap，工具窗上下文里 keyTyped 可能到不了）
+                    e.consume()
+                    inputArea.replaceSelection("\n")
                 }
             }
         })
