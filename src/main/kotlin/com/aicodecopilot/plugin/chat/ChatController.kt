@@ -1,6 +1,7 @@
 package com.aicodecopilot.plugin.chat
 
 import com.aicodecopilot.plugin.provider.LlmClient
+import com.aicodecopilot.plugin.provider.PromptManager
 import com.aicodecopilot.plugin.provider.ProviderConfig
 import com.aicodecopilot.plugin.provider.ProviderManager
 import com.intellij.openapi.application.ApplicationManager
@@ -292,7 +293,12 @@ class ChatController(
     }
 
     private fun buildRequest(s: Session, contextBlocks: List<String>): List<LlmClient.ChatMessage> {
-        val out = mutableListOf<LlmClient.ChatMessage>(LlmClient.ChatMessage(Role.SYSTEM, SYSTEM_PROMPT))
+        val mgr = PromptManager.getInstance()
+        val systemPrompt = PromptManager.buildSystemPrompt(
+            mgr.activeTemplate()?.content,
+            mgr.memory
+        )
+        val out = mutableListOf<LlmClient.ChatMessage>(LlmClient.ChatMessage(Role.SYSTEM, systemPrompt))
         if (contextBlocks.isNotEmpty()) {
             out += LlmClient.ChatMessage(
                 Role.SYSTEM,

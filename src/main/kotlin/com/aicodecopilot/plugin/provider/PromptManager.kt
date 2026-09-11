@@ -135,5 +135,16 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
     companion object {
         fun getInstance(): PromptManager =
             ApplicationManager.getApplication().getService(PromptManager::class.java)
+
+        /**
+         * 组装发送给 LLM 的 system prompt：
+         * 模板内容（空白/缺失回退内置默认）+ 可选的 Permanent Memory 段。
+         */
+        fun buildSystemPrompt(templateContent: String?, memory: String): String {
+            val base = templateContent?.takeIf { it.isNotBlank() }
+                ?: ChatController.SYSTEM_PROMPT
+            return if (memory.isBlank()) base
+            else base + "\n\n# Permanent Memory\n" + memory.trim()
+        }
     }
 }

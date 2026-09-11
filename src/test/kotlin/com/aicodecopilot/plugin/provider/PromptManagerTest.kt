@@ -92,4 +92,29 @@ class PromptManagerTest : LightCodeInsightFixtureTestCase() {
         manager.setMemory("")
         assertEquals("", manager.memory)
     }
+
+    fun testBuildSystemPromptDefaultOnly() {
+        val p = PromptManager.buildSystemPrompt(null, "")
+        assertEquals(ChatController.SYSTEM_PROMPT, p)
+    }
+
+    fun testBuildSystemPromptTemplateOnly() {
+        val p = PromptManager.buildSystemPrompt("You are a reviewer.", "")
+        assertEquals("You are a reviewer.", p)
+    }
+
+    fun testBuildSystemPromptTemplateAndMemory() {
+        val p = PromptManager.buildSystemPrompt("You are a reviewer.", "user prefers Kotlin")
+        assertEquals("You are a reviewer.\n\n# Permanent Memory\nuser prefers Kotlin", p)
+    }
+
+    fun testBuildSystemPromptBlankTemplateFallsBack() {
+        val p = PromptManager.buildSystemPrompt("   \n ", "note")
+        assertEquals(ChatController.SYSTEM_PROMPT + "\n\n# Permanent Memory\nnote", p)
+    }
+
+    fun testBuildSystemPromptMemoryOnly() {
+        val p = PromptManager.buildSystemPrompt(null, "note")
+        assertEquals(ChatController.SYSTEM_PROMPT + "\n\n# Permanent Memory\nnote", p)
+    }
 }
