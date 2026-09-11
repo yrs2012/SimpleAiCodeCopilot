@@ -14,6 +14,7 @@ AiCodeCopilot 是一个内嵌在 **Android Studio**（也兼容 IntelliJ IDEA）
 | 🕘 历史 Session | 会话自动持久化到本地，下拉列表可切换、**继续任意历史会话**、删除会话 |
 | 📂 阅读文件 / 文件夹 | 将指定文件或整个文件夹加入上下文，AI 回答时会阅读其内容（自动跳过二进制/构建目录，单文件 60KB、总量 400KB 保护上限） |
 | 🖱 Send to AiCodeCopilot | 编辑器右键菜单 / Tools 菜单：把当前文件或选中代码一键发给助手 |
+| 📝 提示词模板 & Memory | Settings → Tools → AiCodeCopilot → Prompts & Memory：多套系统提示词模板（增删改、激活切换）+ 永久 Memory（追加到每次请求） |
 | ⌨ 斜杠命令 | `/add <路径>`、`/clear`、`/help` |
 
 ## 环境要求
@@ -52,7 +53,7 @@ build/distributions/AiCodeCopilot-1.0.0.zip
 
 ### 3. 配置 Provider
 
-1. **Settings → Tools → AiCodeCopilot**
+1. **Settings → Tools → AiCodeCopilot → Providers**
 2. 点击 **Add Provider…**（或编辑预置的 OpenAI / DeepSeek）
 3. 填写：
    - **Name**：任意名称
@@ -61,6 +62,13 @@ build/distributions/AiCodeCopilot-1.0.0.zip
    - **API Key**：密钥（本地 Ollama 可留空）
 4. 点击 **Test Connection** 验证连通性
 5. 用 **Set as Default** 设为默认
+
+### 3.1 配置系统提示词与永久 Memory
+
+1. **Settings → Tools → AiCodeCopilot → Prompts & Memory**
+2. 在 **System Prompt Templates** 中添加 / 编辑 / 删除模板，用 **Set as Default** 激活其中一套（★ 标记）
+3. 在 **Permanent Memory** 中填写需要长期生效的背景信息（如个人偏好、项目约定），每次请求都会追加到系统提示词
+4. 未激活任何模板时自动使用内置默认提示词
 
 常用 Base URL 示例：
 
