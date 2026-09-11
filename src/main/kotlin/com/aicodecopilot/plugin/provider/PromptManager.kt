@@ -47,7 +47,7 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
     @Volatile
     private var state: PromptManagerState? = null
 
-    override fun getState(): PromptManagerState? = state ?: createDefaultState().also { state = it }
+    override fun getState(): PromptManagerState? = ensureState()
 
     override fun loadState(state: PromptManagerState) {
         this.state = state
@@ -57,19 +57,24 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
     // 模板
     // ------------------------------------------------------------------
 
+    @Synchronized
     fun all(): List<PromptTemplate> = ensureState().templates.toList()
 
+    @Synchronized
     fun byId(id: String?): PromptTemplate? = id?.let { all().firstOrNull { t -> t.id == it } }
 
     /** 当前激活的模板；未激活任何模板时返回 null（发送时回退内置默认提示词）。 */
+    @Synchronized
     fun activeTemplate(): PromptTemplate? = byId(activeTemplateId())
 
+    @Synchronized
     fun setActive(id: String) {
         val s = ensureState()
         s.activeTemplateId = id
         commit(s)
     }
 
+    @Synchronized
     fun add(template: PromptTemplate) {
         val s = ensureState()
         s.templates.add(template)
@@ -77,6 +82,7 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
         commit(s)
     }
 
+    @Synchronized
     fun update(template: PromptTemplate) {
         val s = ensureState()
         val index = s.templates.indexOfFirst { it.id == template.id }
@@ -84,6 +90,7 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
         commit(s)
     }
 
+    @Synchronized
     fun remove(id: String) {
         val s = ensureState()
         s.templates.removeAll { it.id == id }
@@ -95,9 +102,11 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
     // 永久 Memory
     // ------------------------------------------------------------------
 
+    @get:Synchronized
     val memory: String
         get() = ensureState().memory
 
+    @Synchronized
     fun setMemory(text: String) {
         val s = ensureState()
         s.memory = text

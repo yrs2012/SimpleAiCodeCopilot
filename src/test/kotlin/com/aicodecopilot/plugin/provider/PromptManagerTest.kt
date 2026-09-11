@@ -1,5 +1,6 @@
 package com.aicodecopilot.plugin.provider
 
+import com.aicodecopilot.plugin.chat.ChatController
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase
 import com.intellij.util.xmlb.XmlSerializer
 
@@ -62,6 +63,27 @@ class PromptManagerTest : LightCodeInsightFixtureTestCase() {
 
         manager.remove(a.id)
         assertNull("删除激活模板后应回退为 null（发送时用内置默认）", manager.activeTemplate())
+    }
+
+    fun testUpdateNonexistentIdIsNoOp() {
+        val ghost = PromptTemplate(name = "Ghost", content = "x")
+        val before = manager.all().size
+        manager.update(ghost)
+        assertNull("不存在的 id 更新应为 no-op", manager.byId(ghost.id))
+        assertEquals(before, manager.all().size)
+    }
+
+    fun testRemoveAllTemplatesYieldsNullActive() {
+        val ids = manager.all().map { it.id }
+        ids.forEach { manager.remove(it) }
+        assertTrue("全部删除后应为空", manager.all().isEmpty())
+        assertNull("无模板时激活模板应为 null", manager.activeTemplate())
+
+        // 本测试类的各用例共享同一个 Application（服务实例不重置），
+        // 恢复 Default 模板，避免影响依赖预置模板的其他用例。
+        val restored = PromptTemplate(name = "Default", content = ChatController.SYSTEM_PROMPT)
+        manager.add(restored)
+        assertEquals(restored.id, manager.activeTemplate()?.id)
     }
 
     fun testMemoryReadWrite() {
