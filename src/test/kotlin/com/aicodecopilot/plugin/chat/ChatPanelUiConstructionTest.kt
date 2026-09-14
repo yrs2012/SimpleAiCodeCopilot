@@ -39,11 +39,18 @@ class ChatPanelUiConstructionTest : LightCodeInsightFixtureTestCase() {
         val modelCombo = field<JComboBox<*>>(p, "modelCombo")
         assertNotNull(modelCombo)
 
-        // 3) Provider 下拉 + 设置按钮（同一行）
+        // 3) Provider 下拉 + 顶部设置菜单按钮
         field<JComboBox<*>>(p, "providerCombo")
-        val settings = field<javax.swing.JButton>(p, "settingsButton")
+        val settings = field<javax.swing.JButton>(p, "settingsMenuButton")
         assertNotNull(settings)
-        assertComponentParented(p, settings, "settingsButton 应在面板树中")
+        assertComponentParented(p, settings, "settingsMenuButton 应在面板树中")
+        // 底部旧 provider 设置按钮（settingsButton）已删除
+        try {
+            ChatPanel::class.java.getDeclaredField("settingsButton")
+            fail("settingsButton 字段应已删除")
+        } catch (e: NoSuchFieldException) {
+            // 预期：字段已删除
+        }
 
         // 4) 输入框带边框（复合边框 = LineBorder + 内边距）
         val input = field<com.intellij.ui.components.JBTextArea>(p, "inputArea")

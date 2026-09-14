@@ -45,11 +45,11 @@ import javax.swing.text.html.HTMLEditorKit
  * AiCodeCopilot 聊天面板（右侧工具窗口内容）。
  *
  * 布局：
- *   ┌ 会话下拉 │ ＋新对话 │ 🗑删除          │ ⋯(设置菜单) ┐
+ *   ┌ 会话下拉 │ ＋新对话 │ 🗑删除          │ ⚙(设置菜单) ┐
  *   │ 消息区（HTML 渲染，流式追加）        │
  *   │ + │ 关联 chips │ 清空                 │
  *   │ 输入框（Enter 发送 / Shift+Enter 换行） │ 发送/停止 │
- *   └ Provider 下拉 │ 设置 │ Model: 模型下拉 ┘
+ *   └ Provider 下拉 │ Model: 模型下拉 ┘
  */
 class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiListener {
 
@@ -60,8 +60,7 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
     private val newChatButton = JButton(AllIcons.General.Add)
     private val deleteSessionButton = JButton(AllIcons.General.Delete)
     private val providerCombo = JComboBox<ProviderConfig>()
-    private val settingsButton = JButton(AllIcons.General.GearPlain)
-    private val settingsMenuButton = JButton(AllIcons.Actions.More)
+    private val settingsMenuButton = JButton(AllIcons.General.GearPlain)
     private val clearContextButton = JButton("Clear")
 
     /** 输入框上方 chips 行：+ 按钮 + 自动跟随/手动关联 chips（多行自动长高）。 */
@@ -183,19 +182,13 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
         inputPanel.add(inputArea, BorderLayout.CENTER)
         inputPanel.add(sendButtonPanel, BorderLayout.EAST)
 
-        // ---- 底部行（输入框下方）：Provider 下拉 │ 设置 │ Model: 模型下拉 ----
+        // ---- 底部行（输入框下方）：Provider 下拉 │ Model: 模型下拉 ----
         val modelRow = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0)).apply {
             border = JBUI.Borders.empty(0, 8, 8, 8)
             isOpaque = false
         }
         providerCombo.preferredSize = Dimension(130, maxOf(26, providerCombo.preferredSize.height))
         providerCombo.toolTipText = "Active LLM provider"
-        settingsButton.toolTipText = "Settings — edit provider Base URL / API Key, auto add models"
-        settingsButton.addActionListener { openSettingsDialog() }
-        // 正方形小按钮：去内边距 + 固定 26x26
-        settingsButton.margin = java.awt.Insets(0, 0, 0, 0)
-        settingsButton.preferredSize = Dimension(30, 30)
-        settingsButton.isFocusable = false
         // val modelLabel = JLabel("Model:")
         // modelLabel.foreground = JBColor.GRAY
         modelCombo.preferredSize = Dimension(200, maxOf(26, modelCombo.preferredSize.height))
@@ -203,7 +196,6 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
         modelRow.add(providerCombo)
         // modelRow.add(modelLabel)
         modelRow.add(modelCombo)
-        modelRow.add(settingsButton)
 
         val bottomPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -506,28 +498,6 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
             providerCombo.selectedIndex = 0
         }
         updatingCombo = false
-    }
-
-    /** 打开当前 Provider 的设置对话框（可改 Base URL / API Key / 自动添加模型）。 */
-    private fun openSettingsDialog() {
-        val current = (providerCombo.selectedItem as? ProviderConfig)
-            ?.takeUnless { it.id == ADD_PROVIDER_ID }
-            ?: ProviderManager.getInstance().active()
-        // ProviderConfigDialog 是非模态对话框（isModal=false），不能用 modal 专用的
-        // showAndGet()（会抛 IllegalStateException），与 AiCodeCopilotSettingsConfigurable
-        // 保持一致：用 OK 回调 + show()。
-        val dialog = ProviderConfigDialog(current)
-        dialog.setOKActionListener {
-            val cfg = dialog.buildResult()
-            if (current == null) {
-                ProviderManager.getInstance().add(cfg)
-            } else {
-                ProviderManager.getInstance().update(cfg)
-            }
-            refreshProviderCombo()
-            refreshModelCombo()
-        }
-        dialog.show()
     }
 
     /** 新增 Provider（provider 下拉末尾哨兵项入口）。 */
