@@ -1,9 +1,12 @@
 package com.aicodecopilot.plugin.chat
 
+import com.aicodecopilot.plugin.provider.AiCodeCopilotSettingsConfigurable
+import com.aicodecopilot.plugin.provider.PromptsMemoryConfigurable
 import com.aicodecopilot.plugin.provider.ProviderConfig
 import com.aicodecopilot.plugin.provider.ProviderConfigDialog
 import com.aicodecopilot.plugin.provider.ProviderManager
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
@@ -14,6 +17,7 @@ import java.awt.CardLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.awt.Insets
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyAdapter
@@ -25,9 +29,12 @@ import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComboBox
+import javax.swing.JComponent
 import javax.swing.JEditorPane
 import javax.swing.JLabel
+import javax.swing.JMenuItem
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 import javax.swing.event.DocumentEvent
@@ -38,7 +45,7 @@ import javax.swing.text.html.HTMLEditorKit
  * AiCodeCopilot 聊天面板（右侧工具窗口内容）。
  *
  * 布局：
- *   ┌ 会话下拉 │ ＋新对话 │ 🗑删除 ┐
+ *   ┌ 会话下拉 │ ＋新对话 │ 🗑删除          │ ⋯(设置菜单) ┐
  *   │ 消息区（HTML 渲染，流式追加）        │
  *   │ + │ 关联 chips │ 清空                 │
  *   │ 输入框（Enter 发送 / Shift+Enter 换行） │ 发送/停止 │
@@ -54,6 +61,7 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
     private val deleteSessionButton = JButton(AllIcons.General.Delete)
     private val providerCombo = JComboBox<ProviderConfig>()
     private val settingsButton = JButton(AllIcons.General.GearPlain)
+    private val settingsMenuButton = JButton(AllIcons.Actions.More)
     private val clearContextButton = JButton("Clear")
 
     /** 输入框上方 chips 行：+ 按钮 + 自动跟随/手动关联 chips（多行自动长高）。 */
@@ -117,8 +125,8 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
     // ==================================================================
 
     private fun buildUi() {
-        // ---- 第一行：会话 ----
-        val sessionRow = JPanel(FlowLayout(FlowLayout.LEFT, 6, 2)).apply {
+        // ---- 第一行：会话（左侧）+ 设置菜单（右侧） ----
+        val sessionRow = JPanel(BorderLayout(0, 0)).apply {
             border = JBUI.Borders.empty(6, 8, 2, 8)
         }
         sessionCombo.preferredSize = Dimension(240, 26)
@@ -129,9 +137,17 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
             val s = controller.currentSession()
             if (s != null && s.persisted) controller.deleteCurrentSession()
         }
-        sessionRow.add(sessionCombo)
-        sessionRow.add(newChatButton)
-        sessionRow.add(deleteSessionButton)
+        val sessionLeft = JPanel(FlowLayout(FlowLayout.LEFT, 6, 0))
+        sessionLeft.add(sessionCombo)
+        sessionLeft.add(newChatButton)
+        sessionLeft.add(deleteSessionButton)
+        sessionRow.add(sessionLeft, BorderLayout.WEST)
+        settingsMenuButton.toolTipText = "AiCodeCopilot 设置（Provider / 系统提示词 & Memory）"
+        settingsMenuButton.margin = Insets(0, 0, 0, 0)
+        settingsMenuButton.preferredSize = Dimension(30, 30)
+        settingsMenuButton.isFocusable = false
+        settingsMenuButton.addActionListener { openSettingsMenu(settingsMenuButton) }
+        sessionRow.add(settingsMenuButton, BorderLayout.EAST)
 
         // ---- 清空上下文（挂在文件列表行最右侧，见 rebuildAttachRow） ----
         clearContextButton.toolTipText = "清除手动关联 + 当前跟随项"
@@ -523,6 +539,29 @@ class ChatPanel(private val project: Project) : JPanel(BorderLayout()), ChatUiLi
             refreshModelCombo()
         }
         dialog.show()
+    }
+
+    /** 顶部右侧“设置”下拉菜单：直达 IDE 设置页（Provider 设置 / 系统提示词 & Memory）。 */
+    private fun openSettingsMenu(anchor: JComponent) {
+        val menu = JPopupMenu()
+        menu.add(
+            JMenuItem("Provider 设置").apply {
+                addActionListener {
+                    // showSettingsDialog(project, configurable) 按实例 displayName 定位设置页
+                    ShowSettingsUtil.getInstance()
+                        .showSettingsDialog(project, AiCodeCopilotSettingsConfigurable())
+                }
+            }
+        )
+        menu.add(
+            JMenuItem("系统提示词 & Memory").apply {
+                addActionListener {
+                    ShowSettingsUtil.getInstance()
+                        .showSettingsDialog(project, PromptsMemoryConfigurable())
+                }
+            }
+        )
+        menu.show(anchor, anchor.width, 0)
     }
 
     /** 根据当前 Provider 填充模型下拉，并选中会话所选模型（或首个）。 */
