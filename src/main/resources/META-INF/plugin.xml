@@ -37,12 +37,12 @@
         <!-- 系统提示词模板 + 永久 Memory（应用级） -->
         <applicationService serviceImplementation="com.aicodecopilot.plugin.provider.PromptManager"/>
 
-        <!-- Settings → Tools → AiCodeCopilot（根节点，不可配置，仅作容器） -->
+        <!-- Settings → Tools → AiCodeCopilot（根节点，容器，无配置面板） -->
         <applicationConfigurable
                 id="tools.aicodecopilot"
                 parentId="tools"
                 displayName="AiCodeCopilot"
-                nonConfigurable="true"/>
+                instance="com.aicodecopilot.plugin.provider.AiCodeCopilotGroupConfigurable"/>
 
         <!-- 子页：Provider 管理 -->
         <applicationConfigurable
