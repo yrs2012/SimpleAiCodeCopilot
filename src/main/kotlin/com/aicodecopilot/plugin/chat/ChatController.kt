@@ -294,19 +294,15 @@ class ChatController(
 
     private fun buildRequest(s: Session, contextBlocks: List<String>): List<LlmClient.ChatMessage> {
         val mgr = PromptManager.getInstance()
-        val systemPrompt = PromptManager.buildSystemPrompt(
+        // 单条 system 消息：基础段 + Memory 段 + 文件上下文段 合并。
+        // 部分 OpenAI 兼容后端要求 system 消息有且仅有一条且位于最前，
+        // 拆成多条会报 400 "System message must be at the beginning."
+        val systemPrompt = PromptManager.buildSingleSystemMessage(
             mgr.activeTemplate()?.content,
-            mgr.memory
+            mgr.memory,
+            contextBlocks.joinToString("\n\n")
         )
         val out = mutableListOf<LlmClient.ChatMessage>(LlmClient.ChatMessage(Role.SYSTEM, systemPrompt))
-        if (contextBlocks.isNotEmpty()) {
-            out += LlmClient.ChatMessage(
-                Role.SYSTEM,
-                "The user has shared the following files and code from their Android Studio project. " +
-                    "Use them as context for the conversation that follows.\n\n" +
-                    contextBlocks.joinToString("\n\n")
-            )
-        }
         val history = if (s.messages.size > MAX_HISTORY_MESSAGES) s.messages.takeLast(MAX_HISTORY_MESSAGES) else s.messages
         out += history.map { LlmClient.ChatMessage(it.role, it.content) }
         return out

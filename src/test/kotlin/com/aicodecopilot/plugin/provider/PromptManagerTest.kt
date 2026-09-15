@@ -125,4 +125,34 @@ class PromptManagerTest : LightCodeInsightFixtureTestCase() {
             PromptManager.buildSystemPrompt(null, "  note  ")
         )
     }
+
+    // --- 单条 system 消息：基础段 + 可选 Memory 段 + 可选 Context 段 合并 ---
+
+    fun testBuildSingleSystemMessageWithoutContext() {
+        assertEquals(
+            "You are a reviewer.\n\n# Permanent Memory\nuser prefers Kotlin",
+            PromptManager.buildSingleSystemMessage("You are a reviewer.", "user prefers Kotlin", "")
+        )
+    }
+
+    fun testBuildSingleSystemMessageWithContext() {
+        val ctx = "FILE: a.kt\n```\nval x = 1\n```"
+        val p = PromptManager.buildSingleSystemMessage("You are a reviewer.", "user prefers Kotlin", ctx)
+        assertTrue("应以 preamble 引入上下文", p.contains(PromptManager.CONTEXT_PREAMBLE))
+        assertTrue("应包含上下文原文", p.contains(ctx))
+        assertTrue("上下文应位于 preamble 之后", p.indexOf(PromptManager.CONTEXT_PREAMBLE) < p.indexOf(ctx))
+    }
+
+    fun testBuildSingleSystemMessageContextTrimmed() {
+        val p = PromptManager.buildSingleSystemMessage("base", "", "  FILE: a.kt  ")
+        assertEquals("base\n\n" + PromptManager.CONTEXT_PREAMBLE + "\n\nFILE: a.kt", p)
+    }
+
+    fun testBuildContextPreambleIsStable() {
+        assertEquals(
+            "The user has shared the following files and code from their Android Studio project. " +
+                "Use them as context for the conversation that follows.",
+            PromptManager.CONTEXT_PREAMBLE
+        )
+    }
 }

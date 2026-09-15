@@ -137,6 +137,14 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
             ApplicationManager.getApplication().getService(PromptManager::class.java)
 
         /**
+         * 文件/文件夹上下文的引导语。
+         * 与 [com.aicodecopilot.plugin.chat.ChatController.buildRequest] 合并 system 消息时共用。
+         */
+        const val CONTEXT_PREAMBLE =
+            "The user has shared the following files and code from their Android Studio project. " +
+                "Use them as context for the conversation that follows."
+
+        /**
          * 组装发送给 LLM 的 system prompt：
          * 模板内容（空白/缺失回退内置默认）+ 可选的 Permanent Memory 段。
          */
@@ -145,6 +153,20 @@ class PromptManager : PersistentStateComponent<PromptManagerState> {
                 ?: ChatController.SYSTEM_PROMPT
             return if (memory.isBlank()) base
             else base + "\n\n# Permanent Memory\n" + memory.trim()
+        }
+
+        /**
+         * 组装**单条** system 消息（某些 OpenAI 兼容后端要求 system 消息只能有 1 条且必须在最前，
+         * 多条 system 会返回 400 "System message must be at the beginning."）。
+         *
+         * 顺序：基础段（模板/默认）→ Permanent Memory 段（memory 非空时）→
+         * 文件上下文段（[context] 非空时，以 [CONTEXT_PREAMBLE] 引导）。
+         */
+        fun buildSingleSystemMessage(templateContent: String?, memory: String, context: String): String {
+            val base = buildSystemPrompt(templateContent, memory)
+            val trimmedContext = context.trim()
+            return if (trimmedContext.isEmpty()) base
+            else base + "\n\n" + CONTEXT_PREAMBLE + "\n\n" + trimmedContext
         }
     }
 }
