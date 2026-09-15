@@ -55,6 +55,7 @@
         <applicationConfigurable
                 id="tools.aicodecopilot.prompts"
                 parentId="tools.aicodecopilot"
+                displayName="Prompts &amp; Memory"
                 instance="com.aicodecopilot.plugin.provider.PromptsMemoryConfigurable"/>
 
         <notificationGroup id="AiCodeCopilot" displayType="BALLOON"/>
